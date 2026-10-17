@@ -1,0 +1,9 @@
+id: suspicious_login
+name: Suspicious Login
+severity: MEDIUM
+mitre_technique: "T1078 - Valid Accounts"
+description: "Authentication success flagged by collector as an unusual pattern (e.g. new geography, off-hours, new device)."
+match:
+  event_type: authentication_success
+  message:
+    contains: "unusual_pattern"

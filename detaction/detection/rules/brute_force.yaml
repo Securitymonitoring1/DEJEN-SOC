@@ -1,0 +1,12 @@
+id: brute_force
+name: Authentication Brute Force
+severity: HIGH
+mitre_technique: "T1110 - Brute Force"
+description: "5 or more failed logins from the same source IP within 5 minutes, or from the same endpoint when the source IP is unavailable."
+match:
+  event_type: authentication_failed
+correlation:
+  window_seconds: 300
+  threshold: 5
+  group_by: source_ip
+  group_by_fallback: host

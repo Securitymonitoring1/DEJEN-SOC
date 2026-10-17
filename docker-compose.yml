@@ -1,0 +1,16 @@
+services:
+  postgres:
+    image: postgres:18
+    container_name: dejen-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: dejen_soc
+      POSTGRES_USER: dejen
+      POSTGRES_PASSWORD: dejen_dev_password
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - dejen_postgres_data:/var/lib/postgresql
+
+volumes:
+  dejen_postgres_data:

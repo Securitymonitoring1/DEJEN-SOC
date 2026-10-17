@@ -1,0 +1,1 @@
+"""Automated tests for Dejen collectors and agents."""

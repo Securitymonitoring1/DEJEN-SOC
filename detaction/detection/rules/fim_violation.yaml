@@ -1,0 +1,7 @@
+id: fim_violation
+name: FIM Violation
+severity: HIGH
+mitre_technique: "T1565 - Data Manipulation"
+description: "A monitored file's hash changed (from Person 1's File Integrity Monitoring)."
+match:
+  event_type: file_modified

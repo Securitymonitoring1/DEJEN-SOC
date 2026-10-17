@@ -1,0 +1,137 @@
+.threat-hunting-page {
+  --th-border: rgba(203, 213, 225, 0.12);
+  --th-cyan: #38d4e8;
+  color: #e2e8f0;
+  font-family: "Avenir Next", "Segoe UI", sans-serif;
+}
+
+.th-panel {
+  min-width: 0;
+  border: 1px solid var(--th-border);
+  border-radius: 5px;
+  background: linear-gradient(145deg, rgba(16, 25, 34, 0.97), rgba(10, 17, 24, 0.98));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.025), 0 12px 32px rgba(0, 0, 0, 0.12);
+}
+
+.th-eyebrow {
+  color: #82919e;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+}
+
+.th-button,
+.th-icon-button,
+.th-run-button,
+.th-range-button,
+.th-select,
+.th-input {
+  display: inline-flex;
+  min-height: 29px;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: 1px solid var(--th-border);
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.035);
+  color: #c5d0d9;
+  font-size: 10px;
+  transition: border-color 140ms ease, background-color 140ms ease, color 140ms ease;
+}
+
+.th-button { padding: 5px 9px; }
+.th-icon-button { width: 28px; padding: 0; }
+.th-select { padding: 5px 8px; background-color: #111a23; }
+.th-input { display: block; width: 100%; justify-content: flex-start; padding: 7px 9px; background: #080e14; color: #e2e8f0; }
+.th-run-button { padding: 7px 11px; border-color: rgba(56, 212, 232, 0.45); background: rgba(12, 126, 145, 0.25); color: #a9f3fa; font-weight: 700; }
+.th-range-button { min-width: 32px; min-height: 23px; padding: 3px 6px; color: #81909c; font-size: 9px; }
+
+.th-button:hover,
+.th-icon-button:hover,
+.th-select:hover,
+.th-input:focus,
+.th-range-button:hover { border-color: rgba(56, 212, 232, 0.4); color: #d8faff; }
+.th-run-button:hover:not(:disabled),
+.th-range-button.is-active { border-color: rgba(56, 212, 232, 0.62); background: rgba(19, 154, 173, 0.28); color: #d8fbff; }
+.th-button:disabled,
+.th-icon-button:disabled,
+.th-run-button:disabled { cursor: not-allowed; opacity: 0.4; }
+.th-live-dot { width: 7px; height: 7px; flex: 0 0 auto; border-radius: 50%; background: var(--th-cyan); box-shadow: 0 0 10px rgba(56, 212, 232, 0.55); }
+.th-spinner { width: 11px; height: 11px; border: 1.5px solid rgba(56, 212, 232, 0.25); border-top-color: var(--th-cyan); border-radius: 50%; animation: th-spin 700ms linear infinite; }
+.threat-hunting-page input[type="checkbox"] { width: 12px; height: 12px; accent-color: var(--th-cyan); }
+.threat-hunting-page select option { background: #111a23; color: #dce5ec; }
+
+html:not(.dark) .threat-hunting-theme .threat-hunting-page {
+  --th-border: rgba(30, 54, 65, 0.16);
+  --th-cyan: #087f8c;
+  color: #20313a;
+}
+
+html:not(.dark) .threat-hunting-theme .th-panel {
+  background: linear-gradient(145deg, #ffffff, #f4f8f9);
+  box-shadow: 0 8px 24px rgba(31, 55, 65, 0.08);
+}
+
+html:not(.dark) .threat-hunting-theme .th-eyebrow { color: #536a75; }
+
+html:not(.dark) .threat-hunting-theme .th-button,
+html:not(.dark) .threat-hunting-theme .th-icon-button,
+html:not(.dark) .threat-hunting-theme .th-range-button {
+  background: #f7fafb;
+  color: #263b45;
+}
+
+html:not(.dark) .threat-hunting-theme .th-select,
+html:not(.dark) .threat-hunting-theme .th-input {
+  background: #ffffff;
+  color: #20313a;
+}
+
+html:not(.dark) .threat-hunting-theme .th-select option { background: #ffffff; color: #20313a; }
+html:not(.dark) .threat-hunting-theme .th-run-button { color: #075c66; background: rgba(8, 127, 140, 0.1); }
+html:not(.dark) .threat-hunting-theme .th-range-button { color: #536a75; }
+html:not(.dark) .threat-hunting-theme .th-range-button.is-active { color: #075c66; background: rgba(8, 127, 140, 0.12); }
+
+html:not(.dark) .threat-hunting-theme [class~="text-slate-100"],
+html:not(.dark) .threat-hunting-theme [class~="text-slate-200"],
+html:not(.dark) .threat-hunting-theme [class~="text-slate-300"] { color: #20313a !important; }
+html:not(.dark) .threat-hunting-theme [class~="text-slate-400"],
+html:not(.dark) .threat-hunting-theme [class~="text-slate-500"] { color: #536a75 !important; }
+html:not(.dark) .threat-hunting-theme [class~="text-slate-600"],
+html:not(.dark) .threat-hunting-theme [class~="text-slate-700"] { color: #6a7e87 !important; }
+
+html:not(.dark) .threat-hunting-theme [class*="border-white/"] { border-color: rgba(30, 54, 65, 0.14) !important; }
+html:not(.dark) .threat-hunting-theme [class*="bg-white/"] { background-color: rgba(30, 54, 65, 0.035) !important; }
+html:not(.dark) .threat-hunting-theme [class*="bg-[#101820]"],
+html:not(.dark) .threat-hunting-theme [class*="bg-[#0c131a]"],
+html:not(.dark) .threat-hunting-theme [class*="bg-[#0b1219]"],
+html:not(.dark) .threat-hunting-theme [class*="bg-[#0a1118]"],
+html:not(.dark) .threat-hunting-theme [class*="bg-[#090f15]"],
+html:not(.dark) .threat-hunting-theme [class*="bg-[#080e14]"],
+html:not(.dark) .threat-hunting-theme [class*="bg-[#060b10]"],
+html:not(.dark) .threat-hunting-theme [class*="bg-[#05090d]"] {
+  background-color: #f1f6f7 !important;
+}
+
+html:not(.dark) .threat-hunting-theme [class*="text-cyan-100"] { color: #16434a !important; }
+html:not(.dark) .threat-hunting-theme [class~="text-emerald-300"] { color: #047857 !important; }
+html:not(.dark) .threat-hunting-theme [class~="text-violet-300"] { color: #6d28d9 !important; }
+html:not(.dark) .threat-hunting-theme [class~="text-amber-300"] { color: #b45309 !important; }
+html:not(.dark) .threat-hunting-theme [class~="text-sky-300"] { color: #0369a1 !important; }
+html:not(.dark) .threat-hunting-theme [class*="placeholder:text-slate-700"]::placeholder {
+  color: #6a7e87 !important;
+  -webkit-text-fill-color: #6a7e87 !important;
+}
+
+@keyframes th-spin { to { transform: rotate(360deg); } }
+
+@media (max-width: 640px) {
+  .threat-hunting-page .th-panel { border-radius: 4px; }
+  .threat-hunting-page [aria-label="Autocomplete"] { display: none; }
+  .th-threat-hunting-header { align-items: flex-start; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .th-spinner { animation-duration: 2s; }
+  .th-button, .th-icon-button, .th-run-button, .th-range-button { transition: none; }
+}

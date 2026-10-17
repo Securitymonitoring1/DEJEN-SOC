@@ -1,0 +1,16 @@
+[Unit]
+Description=Dejen endpoint agent
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/dejen-agent
+ExecStart=/usr/bin/python3 -m dejen_agent.gui --service --config __CONFIG_PATH__
+Restart=on-failure
+RestartSec=5
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=default.target

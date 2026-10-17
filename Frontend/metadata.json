@@ -1,0 +1,8 @@
+{
+  "name": "Remix Remix DEJEN | Enterprise SOC Platform",
+  "description": "Enterprise Security Operations Center platform with light glassmorphism command interface, real-time threat detection, 48-hour incident SLA monitoring, forensic investigation, and MITRE ATT\u0026CK telemetry.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

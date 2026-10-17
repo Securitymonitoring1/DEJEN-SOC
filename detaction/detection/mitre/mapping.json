@@ -1,0 +1,27 @@
+{
+  "brute_force": {
+    "technique_id": "T1110",
+    "technique_name": "Brute Force",
+    "tactic": "Credential Access"
+  },
+  "suspicious_login": {
+    "technique_id": "T1078",
+    "technique_name": "Valid Accounts",
+    "tactic": "Defense Evasion, Persistence, Privilege Escalation, Initial Access"
+  },
+  "port_scan": {
+    "technique_id": "T1046",
+    "technique_name": "Network Service Discovery",
+    "tactic": "Discovery"
+  },
+  "malware": {
+    "technique_id": "T1204",
+    "technique_name": "User Execution",
+    "tactic": "Execution"
+  },
+  "fim_violation": {
+    "technique_id": "T1565",
+    "technique_name": "Data Manipulation",
+    "tactic": "Impact"
+  }
+}

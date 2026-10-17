@@ -1,0 +1,1 @@
+"""File integrity monitoring and baseline management."""

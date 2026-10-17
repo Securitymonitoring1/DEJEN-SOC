@@ -1,0 +1,58 @@
+# Dejen
+
+Dejen is a security operations frontend backed by the FastAPI service in `backend/`. The frontend uses backend authentication and reads/writes implemented routes for dashboard summaries, events, alerts, incidents (including assignment, notes, and activity), and agent enrollment/fleet management.
+
+## Run locally
+
+1. Start PostgreSQL:
+
+   ```sh
+   docker compose up -d postgres
+   ```
+
+2. Create a Python environment, install backend requirements, and set the required environment values from the repository root:
+
+   ```sh
+   python -m venv .venv
+   source .venv/bin/activate
+   pip install -r requirements.txt
+   export DATABASE_URL='postgresql+psycopg://dejen:dejen_dev_password@localhost:5432/dejen_soc'
+   export JWT_SECRET_KEY='replace-this-with-a-long-random-secret'
+   ```
+
+3. Create the database tables, create the development admin user, then run FastAPI:
+
+   ```sh
+   python -m backend.database.init_db
+   python -m backend.create_admin
+   python -m backend.seed_samples
+   uvicorn backend.main:app --reload --port 8000
+   ```
+
+   The development admin is `admin` / `Admin123!`. Change this before using the service outside a local development environment. The API documentation is available at `http://localhost:8000/docs`.
+
+   The optional seed command adds a small, repeatable set of linked events, alerts, and incidents for local exploration. It skips insertion when the sample records already exist.
+
+4. In a second terminal, install frontend dependencies and start Vite:
+
+   ```sh
+   cd Frontend
+   npm install
+   npm run dev
+   ```
+
+   Open `http://localhost:3000`. Vite proxies `/auth`, `/dashboard`, `/events`, `/alerts`, `/incidents`, and `/health` to `http://localhost:8000`. Set `VITE_BACKEND_URL` in `Frontend/.env.local` to change the proxy destination. For a same-origin deployment behind a reverse proxy, `VITE_API_URL` can be set to the backend API base URL.
+
+## Supported UI
+
+- Dashboard totals and recent backend events, alerts, and incidents.
+- Alert search and status updates (`OPEN`, `INVESTIGATING`, `RESOLVED`), with related event details.
+- Incident creation from an existing alert, status updates, assignment, investigation notes, and backend-recorded activity.
+- Reports page exports live summary, alert, incident, and event snapshots as PDF or CSV. These files are generated in the browser and are not stored by the backend.
+- Threat Hunting searches authenticated backend events with presets, query validation, result inspection, MITRE hints, alert pivots, and analyst-confirmed incident creation. Saved hunts are stored in the browser.
+
+Threat Hunting operates on fields currently stored by the event API. Process names and command context are inferred from event messages when present; destination IPs and other unrecorded fields are shown as unavailable rather than fabricated. Broader MITRE coverage and containment workflows remain outside the current backend API.
+
+## Endpoint agents and VirtualBox lab
+
+See [docs/agent_enrollment_and_lab.md](docs/agent_enrollment_and_lab.md) for graphical enrollment, Windows/Linux setup, both manager/collector directions, VirtualBox networks, firewall rules, audit policy, and a safe brute-force detection test.

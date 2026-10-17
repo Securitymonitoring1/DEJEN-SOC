@@ -1,0 +1,9 @@
+id: suspicious_powershell
+name: Encoded PowerShell Command
+severity: HIGH
+mitre_technique: "T1059.001 - PowerShell"
+description: "A process-creation event contains PowerShell's encoded-command option. Review the command line and parent process."
+match:
+  event_type: process_creation
+  message:
+    contains: "-EncodedCommand"

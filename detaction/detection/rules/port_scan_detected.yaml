@@ -1,0 +1,7 @@
+id: port_scan_detected
+name: Port Scan Detected
+severity: HIGH
+mitre_technique: "T1046 - Network Service Discovery"
+description: "An upstream network sensor reported a port scan."
+match:
+  event_type: port_scan_detected

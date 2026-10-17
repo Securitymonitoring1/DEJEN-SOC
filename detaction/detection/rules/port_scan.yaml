@@ -1,0 +1,12 @@
+id: port_scan
+name: Port Scan
+severity: HIGH
+mitre_technique: "T1046 - Network Service Discovery"
+description: "Same source IP targets 10 or more distinct destination ports within 60 seconds."
+match:
+  event_type: connection_attempt
+correlation:
+  window_seconds: 60
+  threshold: 10
+  group_by: source_ip
+  distinct_field: dest_port
