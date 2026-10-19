@@ -1,4 +1,6 @@
+
 from fastapi import Depends, FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 from backend.handlers.alerts import router as alerts_router
 from backend.handlers.agents import router as agents_router
@@ -13,6 +15,17 @@ app = FastAPI(
     title="Dejen Security Monitoring Platform",
     description="Security monitoring and incident response backend",
     version="1.0.0",
+)
+
+# Allow the deployed DEJEN SOC frontend to access the backend.
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "https://dejen-frontend-2s3x.onrender.com",
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 
