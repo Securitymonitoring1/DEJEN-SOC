@@ -186,6 +186,31 @@ def test_disconnect_revokes_key_and_marks_endpoint_disconnected():
     engine.dispose()
 
 
+
+def test_reconnect_token_supports_never_connected_endpoint():
+    engine, db = make_database()
+    endpoint = add_agent(db, name="never-connected", last_seen=None)
+    original_id = endpoint.id
+
+    enrolled_agent, token, _ = create_reconnect_token(db, original_id)
+
+    assert enrolled_agent.id == original_id
+    assert token
+
+    reconnected, api_key = enroll_agent(
+        db,
+        token=token,
+        version="1.0.0",
+        host=endpoint.host,
+        ip=endpoint.ip_address,
+        os_type=endpoint.os_type,
+    )
+
+    assert reconnected.id == original_id
+    assert get_agent_by_api_key(db, api_key) is not None
+    assert reconnected.last_seen is None
+    engine.dispose()
+
 def test_unblock_and_unisolate_queue_only_to_alert_endpoint():
     engine, db = make_database()
     endpoint = add_agent(db, name="endpoint", last_seen=datetime.utcnow())

@@ -19,7 +19,10 @@ def create_reconnect_token(db: Session, agent_id: UUID) -> tuple[Agent, str, dat
     if agent is None:
         raise LookupError("Endpoint not found")
     timeout_seconds = max(15, int(os.getenv("DEJEN_AGENT_TIMEOUT_SECONDS", "20")))
-    if agent.last_seen is None or (datetime.utcnow() - agent.last_seen).total_seconds() <= timeout_seconds:
+    if (
+        agent.last_seen is not None
+        and (datetime.utcnow() - agent.last_seen).total_seconds() <= timeout_seconds
+    ):
         raise EndpointActionError("Endpoint is still connected")
 
     token = secrets.token_urlsafe(32)
