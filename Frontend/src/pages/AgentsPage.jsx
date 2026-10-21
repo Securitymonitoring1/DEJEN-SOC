@@ -8,8 +8,13 @@ const stamp = (value) => value ? new Date(value).toLocaleString() : "Never";
 const osLabel = (value) => value;
 
 function managerUrl() {
-  const configured = import.meta.env.VITE_AGENT_MANAGER_URL;
-  return (configured || `${window.location.protocol}//${window.location.hostname}:8000`).replace(/\/$/, "");
+  const configured =
+    import.meta.env.VITE_AGENT_MANAGER_URL ||
+    import.meta.env.VITE_API_URL ||
+    "";
+
+  // In production, never assume the frontend host runs the backend on port 8000.
+  return (configured || window.location.origin).replace(/\/$/, "");
 }
 
 function makeInstallCommand(os, token, name) {
