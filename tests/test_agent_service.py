@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 
+import pytest
 from sqlalchemy import create_engine, select
 from sqlalchemy.orm import Session
 
@@ -67,29 +68,37 @@ def test_expired_enrollment_token_is_rejected():
     engine.dispose()
 
 
-def test_enrollment_token_rejects_a_different_agent_os():
+def test_agent_os_rejects_macos():
+    engine = create_engine("sqlite://")
+    Base.metadata.create_all(engine)
+    with Session(engine) as db:
+        with pytest.raises(ValueError, match="Unsupported agent operating system"):
+            create_enrollment_token(
+                db, name="mac-lab", os_type="macos", expires_in_minutes=15
+            )
+    engine.dispose()
+
     engine = create_engine("sqlite://")
     Base.metadata.create_all(engine)
     with Session(engine) as db:
         token, _ = create_enrollment_token(
-            db, name="mac-lab", os_type="macos", expires_in_minutes=15
+            db, name="linux-lab", os_type="linux", expires_in_minutes=15
         )
 
         assert enroll_agent(
             db,
             token=token,
             version="1.0.0",
-            host="mac-lab",
+            host="linux-lab",
             ip=None,
             os_type="linux",
-        ) is None
-        enrolled = enroll_agent(
+        ) is not None
+        assert enroll_agent(
             db,
             token=token,
             version="1.0.0",
-            host="mac-lab",
+            host="linux-lab",
             ip=None,
-            os_type="macos",
-        )
-        assert enrolled is not None
+            os_type="windows",
+        ) is None
     engine.dispose()

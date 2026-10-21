@@ -21,15 +21,35 @@ export const GlassWorkspace = ({ children }) => {
     setDetectionEnabled,
     detectionIntervalSeconds,
     setDetectionIntervalSeconds,
+    deleteAllEvents,
     resetLayout,
   } = useSoc();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [adminPassword, setAdminPassword] = useState("");
+  const [deleteEventsState, setDeleteEventsState] = useState({ busy: false, error: "", message: "" });
   const openAlerts = alerts.filter((item) => item.status === "OPEN").length;
+
+  const handleDeleteAllEvents = async (event) => {
+    event.preventDefault();
+    setDeleteEventsState({ busy: true, error: "", message: "" });
+    try {
+      const deletedCount = await deleteAllEvents(adminPassword);
+      setAdminPassword("");
+      setDeleteEventsState({ busy: false, error: "", message: `${deletedCount} event${deletedCount === 1 ? "" : "s"} deleted.` });
+    } catch (deleteError) {
+      setDeleteEventsState({ busy: false, error: deleteError instanceof Error ? deleteError.message : "Could not delete events.", message: "" });
+    }
+  };
+
+  const closeSettings = () => {
+    setIsSettingsOpen(false);
+    setAdminPassword("");
+  };
 
   useEffect(() => {
     if (!isSettingsOpen) return undefined;
     const onKeyDown = (event) => {
-      if (event.key === "Escape") setIsSettingsOpen(false);
+      if (event.key === "Escape") closeSettings();
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
@@ -42,7 +62,7 @@ export const GlassWorkspace = ({ children }) => {
         <Header error={error} loading={loading} username={currentUser?.username} onNavigate={navigate} onRefresh={refreshData} onLogout={logout} />
 
         {isSettingsOpen && (
-          <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/35 p-4 pt-10 backdrop-blur-sm" onClick={() => setIsSettingsOpen(false)}>
+          <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/35 p-4 pt-10 backdrop-blur-sm" onClick={closeSettings}>
             <section role="dialog" aria-modal="true" aria-labelledby="platform-settings-title" className="glass-modal w-full max-w-md max-h-[min(85vh,680px)] overflow-y-auto rounded-xl border border-black/10 p-5 shadow-2xl" onClick={(event) => event.stopPropagation()}>
               <div className="flex items-center justify-between pb-3 border-b border-black/10 mb-4">
                 <div className="flex items-center gap-2">
@@ -52,7 +72,7 @@ export const GlassWorkspace = ({ children }) => {
                     <p className="text-[10px] text-neutral-500">Workspace preferences</p>
                   </div>
                 </div>
-                <button onClick={() => setIsSettingsOpen(false)} className="w-7 h-7 rounded-full bg-neutral-100 hover:bg-neutral-200 text-neutral-600 flex items-center justify-center" aria-label="Close settings">×</button>
+                <button onClick={closeSettings} className="w-7 h-7 rounded-full bg-neutral-100 hover:bg-neutral-200 text-neutral-600 flex items-center justify-center" aria-label="Close settings">×</button>
               </div>
 
               <div className="mb-4 pb-4 border-b border-black/10">
@@ -92,11 +112,23 @@ export const GlassWorkspace = ({ children }) => {
                 </p>
               </div>
 
+              {currentUser?.role === "ADMIN" && <form onSubmit={handleDeleteAllEvents} className="mb-4 border-t border-red-200 pt-4">
+                <h4 className="text-[11px] font-bold text-red-800">Delete event data</h4>
+                <p className="mt-1 text-[10px] leading-4 text-neutral-600">Permanently removes events and linked alerts, incidents, notes, and response action records. This does not undo changes already applied on endpoints.</p>
+                <label className="mt-3 block text-[10px] font-semibold text-neutral-700" htmlFor="delete-events-admin-password">Administrator password</label>
+                <input id="delete-events-admin-password" type="password" autoComplete="current-password" value={adminPassword} onChange={(event) => setAdminPassword(event.target.value)} required className="mt-1 w-full rounded border border-black/20 bg-white px-3 py-2 text-xs" />
+                {deleteEventsState.error && <p role="alert" className="mt-2 text-[10px] text-red-700">{deleteEventsState.error}</p>}
+                {deleteEventsState.message && <p role="status" className="mt-2 text-[10px] text-emerald-700">{deleteEventsState.message}</p>}
+                <button type="submit" disabled={deleteEventsState.busy || !adminPassword} className="mt-3 rounded border border-red-700 bg-red-700 px-3 py-2 text-[10px] font-semibold text-white hover:bg-red-800 disabled:cursor-not-allowed disabled:opacity-50">
+                  {deleteEventsState.busy ? "Deleting…" : "Delete all events"}
+                </button>
+              </form>}
+
               <div className="flex items-center justify-between pt-2">
-                <button onClick={() => { resetLayout(); setIsSettingsOpen(false); }} className="text-[11px] text-neutral-600 hover:text-black flex items-center gap-1.5 transition-colors cursor-pointer">
+                <button onClick={() => { resetLayout(); closeSettings(); }} className="text-[11px] text-neutral-600 hover:text-black flex items-center gap-1.5 transition-colors cursor-pointer">
                   <RefreshCw className="w-3 h-3" />Reset layout
                 </button>
-                <button onClick={() => setIsSettingsOpen(false)} className="px-4 py-2 rounded-xl bg-[#111315] text-white text-xs font-semibold hover:bg-black cursor-pointer">
+                <button onClick={closeSettings} className="px-4 py-2 rounded-xl bg-[#111315] text-white text-xs font-semibold hover:bg-black cursor-pointer">
                   Done
                 </button>
               </div>

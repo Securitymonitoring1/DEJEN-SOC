@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
-import { authApi, alertsApi, dashboardApi, eventsApi, incidentsApi, getAuthToken, setAuthToken } from "../services/api";
+import { agentsApi, authApi, alertsApi, dashboardApi, eventsApi, incidentsApi, getAuthToken, setAuthToken } from "../services/api";
 
 /** @type {import('react').Context<any>} */
 const SocContext = createContext(null);
@@ -34,9 +34,9 @@ function getInitialAudioSettings() {
 }
 
 function getInitialDetectionInterval() {
-  if (typeof window === "undefined") return 2;
+  if (typeof window === "undefined") return 5;
   const saved = Number(localStorage.getItem("dejen.detectionIntervalSeconds"));
-  if (!Number.isInteger(saved) || saved < 1 || saved > 30 || saved === 5) return 2;
+  if (!Number.isInteger(saved) || saved < 1 || saved > 30) return 5;
   return saved;
 }
 
@@ -82,8 +82,9 @@ function readTokenUser(token) {
   }
 }
 
-function normalizeAlert(alert, events) {
+function normalizeAlert(alert, events, agentsById = {}) {
   const event = events.find((item) => item.event_id === alert.event_id);
+  const agent = event?.agent_id ? agentsById[event.agent_id] : null;
   return {
     id: alert.alert_id,
     alertId: alert.alert_id,
@@ -99,6 +100,7 @@ function normalizeAlert(alert, events) {
     timestamp: alert.created_at,
     host: event?.host || "Unknown host",
     agentId: event?.agent_id || "",
+    deviceIp: agent?.ip_address || "Not recorded (local or unavailable)",
     sourceIp: event?.source_ip || "Unknown IP",
     user: event?.username || "Unknown user",
     eventType: event?.event_type || "Unknown event",
@@ -134,11 +136,13 @@ export const SocProvider = ({ children }) => {
   const [audioVolume, setAudioVolumeState] = useState(() => getInitialAudioSettings().volume);
   const [detectionEnabled, setDetectionEnabledState] = useState(getInitialDetectionEnabled);
   const [detectionIntervalSeconds, setDetectionIntervalSecondsState] = useState(getInitialDetectionInterval);
+  const [agents, setAgents] = useState([]);
   const [alerts, setAlerts] = useState([]);
   const [incidents, setIncidents] = useState([]);
   const [events, setEvents] = useState([]);
   const [summary, setSummary] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [initialDataLoaded, setInitialDataLoaded] = useState(false);
   const [error, setError] = useState("");
 
   const navigate = (to) => {
@@ -154,14 +158,17 @@ export const SocProvider = ({ children }) => {
     setLoading(true);
     setError("");
     try {
-      const [apiEvents, apiAlerts, apiIncidents, apiSummary] = await Promise.all([
+      const [apiEvents, apiAlerts, apiIncidents, apiSummary, apiAgents] = await Promise.all([
         eventsApi.getAll(),
         alertsApi.getAll(),
         incidentsApi.getAll(),
         dashboardApi.getSummary(),
+        agentsApi.getAll(),
       ]);
-      const normalizedAlerts = apiAlerts.map((alert) => normalizeAlert(alert, apiEvents));
+      const agentsById = Object.fromEntries(apiAgents.map((agent) => [agent.id, agent]));
+      const normalizedAlerts = apiAlerts.map((alert) => normalizeAlert(alert, apiEvents, agentsById));
       setEvents(apiEvents);
+      setAgents(apiAgents);
       setAlerts(normalizedAlerts);
       setIncidents(apiIncidents.map((incident) => normalizeIncident(incident, normalizedAlerts)));
       setSummary(apiSummary);
@@ -169,6 +176,7 @@ export const SocProvider = ({ children }) => {
       setError(requestError instanceof Error ? requestError.message : "Unable to load data from the backend.");
     } finally {
       setLoading(false);
+      setInitialDataLoaded(true);
     }
   }, []);
 
@@ -232,6 +240,7 @@ export const SocProvider = ({ children }) => {
       const result = await authApi.login(username, password);
       const user = readTokenUser(result.access_token);
       if (!user) throw new Error("The backend returned an invalid access token.");
+      setInitialDataLoaded(false);
       setCurrentUser(user);
       setError("");
       return true;
@@ -245,8 +254,10 @@ export const SocProvider = ({ children }) => {
   const logout = () => {
     authApi.logout();
     setCurrentUser(null);
+    setInitialDataLoaded(false);
     setAlerts([]);
     setIncidents([]);
+    setAgents([]);
     setEvents([]);
     setSummary(null);
     navigate("/login");
@@ -256,8 +267,10 @@ export const SocProvider = ({ children }) => {
     const handleUnauthorized = () => {
       authApi.logout();
       setCurrentUser(null);
+      setInitialDataLoaded(false);
       setAlerts([]);
       setIncidents([]);
+      setAgents([]);
       setEvents([]);
       setSummary(null);
       setError("Your session is no longer valid. Please sign in again.");
@@ -296,18 +309,32 @@ export const SocProvider = ({ children }) => {
     await refreshData();
   };
 
+  const deleteEvent = async (id, password) => {
+    const result = await eventsApi.deleteOne(id, password);
+    await refreshData();
+    return result.deleted_events;
+  };
+
+  const deleteAllEvents = async (password) => {
+    const result = await eventsApi.deleteAll(password);
+    await refreshData();
+    return result.deleted_events;
+  };
+
   const isAuthenticated = Boolean(currentUser && getAuthToken());
 
   return (
     <SocContext.Provider value={{
       currentUser,
       isAuthenticated,
+      initialDataLoading: Boolean(currentUser && !initialDataLoaded),
       login,
       logout,
       currentRoute,
       routeParams,
       navigate,
       alerts,
+      agents,
       incidents,
       events,
       summary,
@@ -319,6 +346,8 @@ export const SocProvider = ({ children }) => {
       assignIncident,
       createIncident,
       createEvent,
+      deleteEvent,
+      deleteAllEvents,
       theme,
       setTheme,
       toggleTheme,

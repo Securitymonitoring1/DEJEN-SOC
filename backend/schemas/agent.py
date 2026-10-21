@@ -5,7 +5,7 @@ from uuid import UUID
 from pydantic import BaseModel, ConfigDict, Field, IPvAnyAddress
 
 
-AgentOS = Literal["windows", "linux", "macos"]
+AgentOS = Literal["windows", "linux"]
 
 
 class EnrollmentTokenCreate(BaseModel):

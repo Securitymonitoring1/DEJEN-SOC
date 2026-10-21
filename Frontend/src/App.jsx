@@ -11,6 +11,7 @@ import { ThreatHunting } from "./pages/ThreatHunting";
 import { InvestigationPage } from "./pages/InvestigationPage";
 import { AgentsPage } from "./pages/AgentsPage";
 import { EventsPage } from "./pages/EventsPage";
+import { AppLoadingOverlay } from "./components/AppLoadingOverlay";
 const AppContent = () => {
   const { currentRoute, isAuthenticated } = useSoc();
   if (!isAuthenticated && currentRoute === "/") {
@@ -49,6 +50,14 @@ const AppContent = () => {
 };
 export default function App() {
   return <SocProvider>
-      <AppContent />
+      <AppContentWithLoading />
     </SocProvider>;
 }
+
+const AppContentWithLoading = () => {
+  const { initialDataLoading } = useSoc();
+  return <>
+    <AppContent />
+    <AppLoadingOverlay visible={initialDataLoading} />
+  </>;
+};

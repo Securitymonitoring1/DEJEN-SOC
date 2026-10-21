@@ -8,14 +8,25 @@ from sqlalchemy.orm import Session
 
 from backend.models.agent import Agent, EnrollmentToken
 
+SUPPORTED_AGENT_OS = {"windows", "linux"}
+
 
 def hash_secret(secret: str) -> str:
     return hashlib.sha256(secret.encode("utf-8")).hexdigest()
 
 
+def validate_agent_os(os_type: str | None) -> str | None:
+    if os_type is None:
+        return None
+    if os_type not in SUPPORTED_AGENT_OS:
+        raise ValueError(f"Unsupported agent operating system: {os_type}")
+    return os_type
+
+
 def create_enrollment_token(
     db: Session, *, name: str, os_type: str, expires_in_minutes: int
 ) -> tuple[str, datetime]:
+    os_type = validate_agent_os(os_type)
     token = secrets.token_urlsafe(32)
     expires_at = datetime.utcnow() + timedelta(minutes=expires_in_minutes)
     agent = Agent(
@@ -47,6 +58,7 @@ def enroll_agent(
     ip: str | None,
     os_type: str | None = None,
 ) -> tuple[Agent, str] | None:
+    os_type = validate_agent_os(os_type)
     enrollment = db.scalar(
         select(EnrollmentToken)
         .where(EnrollmentToken.token_hash == hash_secret(token))

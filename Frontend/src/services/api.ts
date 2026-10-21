@@ -24,6 +24,10 @@ export interface ApiEvent {
   severity: string;
 }
 
+export interface EventDeleteResult {
+  deleted_events: number;
+}
+
 export interface ApiIncident {
   incident_id: string;
   alert_id: string;
@@ -52,7 +56,7 @@ export interface DashboardSummary {
 export interface ManagedAgent {
   id: string;
   name: string;
-  os_type: "windows" | "linux" | "macos";
+  os_type: "windows" | "linux";
   host: string | null;
   ip_address: string | null;
   status: "Active" | "Disconnected" | "Never connected";
@@ -64,7 +68,7 @@ export interface ManagedAgent {
 export interface EnrollmentToken {
   token: string;
   agent_name: string;
-  os: "windows" | "linux" | "macos";
+  os: "windows" | "linux";
   expires_at: string;
 }
 
@@ -141,15 +145,23 @@ export const dashboardApi = {
 export const agentsApi = {
   getAll: () => apiRequest<ManagedAgent[]>("/agents"),
   createReconnectToken: (agentId: string) => apiRequest<EnrollmentToken>(`/agents/${agentId}/reconnect-token`, { method: "POST" }),
-  createEnrollmentToken: (data: { name: string; os: "windows" | "linux" | "macos"; expires_in_minutes: number }) =>
+  createEnrollmentToken: (data: { name: string; os: "windows" | "linux"; expires_in_minutes: number }) =>
     apiRequest<EnrollmentToken>("/agents/tokens", { method: "POST", body: JSON.stringify(data) }),
   remove: (id: string) => apiRequest<void>(`/agents/${id}`, { method: "DELETE" }),
-  installerUrl: (os: "windows" | "linux" | "macos") => `${API_BASE}/agents/installers/${os}`,
+  installerUrl: (os: "windows" | "linux") => `${API_BASE}/agents/installers/${os}`,
 };
 
 export const eventsApi = {
   getAll: () => apiRequest<ApiEvent[]>("/events"),
   getById: (id: string) => apiRequest<ApiEvent>(`/events/${id}`),
+  deleteOne: (id: string, password: string) => apiRequest<EventDeleteResult>(`/events/${id}`, {
+    method: "DELETE",
+    body: JSON.stringify({ password }),
+  }),
+  deleteAll: (password: string) => apiRequest<EventDeleteResult>("/events", {
+    method: "DELETE",
+    body: JSON.stringify({ password }),
+  }),
   create: (event: Omit<ApiEvent, "event_id" | "timestamp">) => apiRequest<ApiEvent>("/events", {
     method: "POST",
     body: JSON.stringify(event),

@@ -7,6 +7,7 @@ interface AlertRecord {
   rule: string;
   host: string;
   agentId: string;
+  deviceIp: string;
   sourceIp: string;
   severity: string;
   riskScore: number;
@@ -36,13 +37,14 @@ const hasActiveAction = (actions: { action_type: string; status: string }[] | un
 export const AlertTable = ({ alerts, canManage, onOpen, onStatusChange, onResponseAction, onConfirmResponseAction, onCancelResponseAction, onConnectAgent, canConnectAgent, reconnectTokens, pendingResponseAction, responseActions }: AlertTableProps) => (
   <div className="overflow-x-auto rounded-md border border-black/10 bg-white">
     <table className="w-full min-w-[1100px] text-left text-xs">
-      <thead className="bg-[#f5f6f6] text-[#62686d]"><tr><th className="px-4 py-3">Alert</th><th className="px-4 py-3">Rule</th><th className="px-4 py-3">Host</th><th className="px-4 py-3">Source IP</th><th className="px-4 py-3">Severity</th><th className="px-4 py-3">Risk</th><th className="px-4 py-3">Status</th><th className="px-4 py-3">Created</th><th className="px-4 py-3">Response</th></tr></thead>
+      <thead className="bg-[#f5f6f6] text-[#62686d]"><tr><th className="px-4 py-3">Alert</th><th className="px-4 py-3">Rule</th><th className="px-4 py-3">Host</th><th className="px-4 py-3">Device IP</th><th className="px-4 py-3">Source IP</th><th className="px-4 py-3">Severity</th><th className="px-4 py-3">Risk</th><th className="px-4 py-3">Status</th><th className="px-4 py-3">Created</th><th className="px-4 py-3">Response</th></tr></thead>
       <tbody className="divide-y divide-black/5">
         {alerts.map((alert) => <tr key={alert.id} onClick={() => onOpen(alert)} className="cursor-pointer hover:bg-[#f8f9f9]">
           <td className="px-4 py-3"><span className="block max-w-sm font-semibold">{alert.title}</span><span className="mt-1 block font-mono text-[10px] text-[#73797e]">{alert.id}</span></td>
           <td className="px-4 py-3">{alert.rule}</td>
           <td className="px-4 py-3">{alert.host}</td>
-          <td className="px-4 py-3 font-mono text-[10px]">{alert.sourceIp === "Unknown IP" ? "Not recorded (local or unavailable)" : alert.sourceIp}</td>
+          <td className="px-4 py-3 font-mono text-[10px]">{alert.deviceIp === "Not recorded (local or unavailable)" ? "Not recorded (local or unavailable)" : alert.deviceIp}</td>
+          <td className="px-4 py-3 font-mono text-[10px]">{alert.sourceIp === "::1" ? "127.0.0.1" : alert.sourceIp === "Unknown IP" ? "Not recorded (local or unavailable)" : alert.sourceIp}</td>
           <td className="px-4 py-3"><SeverityBadge severity={alert.severity} /></td>
           <td className="px-4 py-3 tabular-nums">{alert.riskScore}</td>
           <td className="px-4 py-3" onClick={(event) => event.stopPropagation()}><select aria-label={`Status for ${alert.title}`} value={alert.status} disabled={!canManage} onChange={(event) => onStatusChange(alert, event.target.value)} className="rounded border border-black/15 bg-white px-2 py-1 text-[11px] disabled:bg-[#f2f3f3]">{statuses.map((status) => <option key={status}>{status}</option>)}</select></td>
@@ -75,7 +77,7 @@ export const AlertTable = ({ alerts, canManage, onOpen, onStatusChange, onRespon
             {reconnectTokens[alert.id]?.message && <span className="mt-1 block max-w-52 text-[10px] text-[#697974]">{reconnectTokens[alert.id].message}</span>}
           </td>
         </tr>)}
-        {!alerts.length && <tr><td colSpan={9} className="px-4 py-10 text-center text-[#777d82]">No backend alerts match these filters.</td></tr>}
+        {!alerts.length && <tr><td colSpan={10} className="px-4 py-10 text-center text-[#777d82]">No backend alerts match these filters.</td></tr>}
       </tbody>
     </table>
   </div>

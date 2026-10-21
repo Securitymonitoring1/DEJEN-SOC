@@ -21,7 +21,8 @@ export const IncidentReportingCountdown = ({ createdAt, compact = false }) => {
 
   if (!Number.isFinite(createdAtMs)) return <span>Unavailable</span>;
 
-  const remainingMs = createdAtMs + REPORTING_WINDOW_MS - now;
+  const elapsedMs = Math.max(0, now - createdAtMs);
+  const remainingMs = Math.max(0, REPORTING_WINDOW_MS - elapsedMs);
   const status = remainingMs <= 0 ? "Overdue" : remainingMs <= 12 * 60 * 60 * 1000 ? "Urgent" : remainingMs <= 24 * 60 * 60 * 1000 ? "Due soon" : "On track";
   const statusClass = remainingMs <= 0 ? "text-red-700" : remainingMs <= 12 * 60 * 60 * 1000 ? "text-orange-700" : remainingMs <= 24 * 60 * 60 * 1000 ? "text-amber-700" : "text-[#287b70]";
 

@@ -47,7 +47,7 @@ agent_bearer = HTTPBearer()
 
 @router.get("/installers/{os_type}", include_in_schema=False)
 def download_agent_bundle(os_type: str):
-    if os_type not in {"windows", "linux", "macos"}:
+    if os_type not in {"windows", "linux"}:
         raise HTTPException(status_code=404, detail="Unsupported agent operating system")
     root = Path(__file__).resolve().parents[2]
     package_dirs = (

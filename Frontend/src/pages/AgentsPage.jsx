@@ -5,7 +5,7 @@ import { agentsApi } from "../services/api";
 import { useSoc } from "../context/SocContext";
 
 const stamp = (value) => value ? new Date(value).toLocaleString() : "Never";
-const osLabel = (value) => value === "macos" ? "macOS" : value;
+const osLabel = (value) => value;
 
 function managerUrl() {
   const configured = import.meta.env.VITE_AGENT_MANAGER_URL;
@@ -18,9 +18,6 @@ function makeInstallCommand(os, token, name) {
   const shQuote = (value) => `'${value.replaceAll("'", "'\\''")}'`;
   if (os === "windows") {
     return `$ErrorActionPreference='Stop'; $url='${psQuote(server)}/agents/installers/windows'; $zip="$env:TEMP\\dejen-agent.zip"; Invoke-WebRequest $url -OutFile $zip; Expand-Archive -Force $zip "$env:ProgramData\\Dejen"; Set-Location "$env:ProgramData\\Dejen"; py -m dejen_agent.gui --enroll --server '${psQuote(server)}' --token '${psQuote(token)}' --name '${psQuote(name)}'; if ($LASTEXITCODE -ne 0) { throw 'Agent enrollment failed.' }; Set-ExecutionPolicy -Scope Process Bypass -Force; .\\packaging\\register_dejen_agent.ps1`;
-  }
-  if (os === "macos") {
-    return `curl -fsSL ${shQuote(`${server}/agents/installers/macos`)} -o "$HOME/Downloads/dejen-agent-macos.zip" && mkdir -p "$HOME/Applications/DejenAgent" && unzip -oq "$HOME/Downloads/dejen-agent-macos.zip" -d "$HOME/Applications/DejenAgent" && cd "$HOME/Applications/DejenAgent" && python3 -m dejen_agent.gui --enroll --server ${shQuote(server)} --token ${shQuote(token)} --name ${shQuote(name)}`;
   }
   return `curl -fsSL ${shQuote(`${server}/agents/installers/linux`)} -o /tmp/dejen-agent.zip && sudo mkdir -p /opt/dejen-agent && sudo unzip -oq /tmp/dejen-agent.zip -d /opt/dejen-agent && cd /opt/dejen-agent && python3 -m dejen_agent.gui --enroll --server ${shQuote(server)} --token ${shQuote(token)} --name ${shQuote(name)}`;
 }
@@ -146,7 +143,7 @@ export const AgentsPage = () => {
         <div className="mb-5 flex items-start justify-between gap-4"><div><span className="soc-eyebrow">AGENT ENROLLMENT</span><h2 id="agent-wizard-title" className="mt-1 text-xl font-bold text-neutral-900">Connect an agent</h2></div><button onClick={closeWizard} className="rounded p-2 text-neutral-600 hover:bg-neutral-100" aria-label="Close wizard">×</button></div>
         {!enrollment ? <form onSubmit={issueToken} className="space-y-4">
           <label className="block text-sm font-medium text-neutral-800">Agent name<input autoFocus required maxLength="100" value={name} onChange={(event) => setName(event.target.value)} placeholder="e.g. win11-lab" className="mt-1 block w-full rounded border border-neutral-300 px-3 py-2" /></label>
-          <div className="grid gap-4 sm:grid-cols-2"><label className="block text-sm font-medium text-neutral-800">Operating system<select value={os} onChange={(event) => setOs(event.target.value)} className="mt-1 block w-full rounded border border-neutral-300 px-3 py-2"><option value="windows">Windows</option><option value="linux">Linux</option><option value="macos">macOS</option></select></label>
+          <div className="grid gap-4 sm:grid-cols-2"><label className="block text-sm font-medium text-neutral-800">Operating system<select value={os} onChange={(event) => setOs(event.target.value)} className="mt-1 block w-full rounded border border-neutral-300 px-3 py-2"><option value="windows">Windows</option><option value="linux">Linux</option></select></label>
             <label className="block text-sm font-medium text-neutral-800">Token expires<select value={expiry} onChange={(event) => setExpiry(event.target.value)} className="mt-1 block w-full rounded border border-neutral-300 px-3 py-2"><option value="15">15 minutes</option><option value="60">1 hour</option><option value="240">4 hours</option><option value="1440">24 hours</option></select></label></div>
           <div className="flex justify-end gap-2 pt-2"><button type="button" onClick={closeWizard} className="rounded border border-neutral-300 px-3 py-2 text-sm">Cancel</button><button disabled={busy || !name.trim()} className="inline-flex items-center gap-2 rounded bg-[#10211f] px-3 py-2 text-sm font-semibold text-white disabled:opacity-50"><Plus size={15} />{busy ? "Generating…" : "Generate enrollment token"}</button></div>
         </form> : <div className="space-y-4">

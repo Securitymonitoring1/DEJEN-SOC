@@ -134,8 +134,6 @@ def _block_local_ip(system: str, action_id: str, address: str) -> None:
         _run(["powershell.exe", "-NoProfile", "-NonInteractive", "-Command", script])
     elif system == "Linux":
         _block_local_ip_iptables(action_id, address)
-    elif system == "Darwin":
-        _block_local_ip_pf(address)
     else:
         raise ResponseActionError(f"IP blocking is unsupported on {system}")
 
@@ -152,33 +150,6 @@ def _block_local_ip_iptables(action_id: str, address: str) -> None:
         if result.returncode == 0:
             continue
         _run([binary, "-I", chain, "1", selector, address, "-m", "comment", "--comment", tag, "-j", "DROP"])
-
-
-def _block_local_ip_pf(address: str) -> None:
-    pfctl = "/sbin/pfctl"
-    status = _run([pfctl, "-s", "info"])
-    if "Status: Enabled" not in status:
-        raise ResponseActionError("macOS PF firewall is disabled; no firewall change was made")
-    config_path = Path("/etc/pf.conf")
-    anchor_path = Path("/etc/pf.anchors/dejen-agent")
-    try:
-        config = config_path.read_text(encoding="utf-8")
-        rules = anchor_path.read_text(encoding="utf-8") if anchor_path.exists() else ""
-        rules_to_add = (
-            f"block drop quick from {address} to any\n"
-            f"block drop quick from any to {address}\n"
-        )
-        if rules_to_add not in rules:
-            anchor_path.write_text(rules + rules_to_add, encoding="utf-8")
-        anchor_lines = (
-            'anchor "dejen-agent"',
-            'load anchor "dejen-agent" from "/etc/pf.anchors/dejen-agent"',
-        )
-        if not all(line in config for line in anchor_lines):
-            config_path.write_text(config.rstrip() + "\n" + "\n".join(anchor_lines) + "\n", encoding="utf-8")
-        _run([pfctl, "-f", str(config_path)])
-    except OSError as error:
-        raise ResponseActionError(f"Could not update PF rules: {error}") from error
 
 
 def _unblock_local_ip(system: str, address: str) -> None:
@@ -207,29 +178,8 @@ def _unblock_local_ip(system: str, address: str) -> None:
                     continue
                 tokens[0] = "-D"
                 _run([binary, *tokens[1:]])
-    elif system == "Darwin":
-        _unblock_local_ip_pf(address)
     else:
         raise ResponseActionError(f"IP unblocking is unsupported on {system}")
-
-
-def _unblock_local_ip_pf(address: str) -> None:
-    pfctl = "/sbin/pfctl"
-    status = _run([pfctl, "-s", "info"])
-    if "Status: Enabled" not in status:
-        raise ResponseActionError("macOS PF firewall is disabled; no firewall change was made")
-    anchor_path = Path("/etc/pf.anchors/dejen-agent")
-    try:
-        if anchor_path.exists():
-            rules = [
-                line
-                for line in anchor_path.read_text(encoding="utf-8").splitlines()
-                if address not in line
-            ]
-            anchor_path.write_text("\n".join(rules) + ("\n" if rules else ""), encoding="utf-8")
-        _run([pfctl, "-f", "/etc/pf.conf"])
-    except OSError as error:
-        raise ResponseActionError(f"Could not remove endpoint IP PF rules: {error}") from error
 
 
 def _isolate(system: str, state_path: Path) -> None:
@@ -250,9 +200,6 @@ def _isolate(system: str, state_path: Path) -> None:
             for line in output.splitlines()
             if (match := re.match(r"\d+:\s+([^:@]+)", line)) and match.group(1) != "lo"
         ]
-    elif system == "Darwin":
-        output = _run(["/sbin/ifconfig", "-l"])
-        interfaces = [name for name in output.split() if name != "lo0"]
     else:
         raise ResponseActionError(f"Network isolation is unsupported on {system}")
 
@@ -271,7 +218,7 @@ def _isolate(system: str, state_path: Path) -> None:
         elif system == "Linux":
             _run(["ip", "link", "set", "dev", interface, "down"])
         else:
-            _run(["/sbin/ifconfig", interface, "down"])
+            raise ResponseActionError(f"Network isolation is unsupported on {system}")
 
 
 def _unisolate(system: str, state_path: Path) -> None:
@@ -292,8 +239,6 @@ def _unisolate(system: str, state_path: Path) -> None:
             _run(["powershell.exe", "-NoProfile", "-NonInteractive", "-Command", command])
         elif system == "Linux":
             _run(["ip", "link", "set", "dev", interface, "up"])
-        elif system == "Darwin":
-            _run(["/sbin/ifconfig", interface, "up"])
         else:
             raise ResponseActionError(f"Network restoration is unsupported on {system}")
     try:
@@ -337,8 +282,5 @@ def _disable_agent_startup(system: str) -> None:
             _run(["systemctl", "disable", "dejen-agent.service"])
         else:
             _run(["systemctl", "--user", "disable", "dejen-agent.service"])
-    elif system == "Darwin":
-        domain = "system" if hasattr(os, "geteuid") and os.geteuid() == 0 else f"gui/{os.getuid()}"
-        _run(["launchctl", "disable", f"{domain}/com.dejen.agent"])
     else:
         raise ResponseActionError(f"Agent disconnection is unsupported on {system}")

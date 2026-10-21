@@ -722,6 +722,111 @@ html.dark .landing-overview .shadow-2xl {
   border-radius: 8px;
 }
 
+.dejen-loading-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  background: rgba(244, 248, 246, 0.92);
+  backdrop-filter: blur(12px);
+}
+
+.dejen-loading-content {
+  display: flex;
+  width: min(100% - 40px, 320px);
+  flex-direction: column;
+  align-items: center;
+  animation: dejen-loading-enter 500ms ease-out both;
+}
+
+.dejen-loading-mark-wrap {
+  position: relative;
+  display: grid;
+  width: 104px;
+  height: 104px;
+  place-items: center;
+}
+
+.dejen-loading-mark {
+  z-index: 1;
+  width: 68px;
+  height: 68px;
+  object-fit: contain;
+  animation: dejen-loading-pulse 1.8s ease-in-out infinite;
+}
+
+.dejen-loading-ring {
+  position: absolute;
+  inset: 4px;
+  border: 2px solid rgba(31, 93, 79, 0.12);
+  border-top-color: #277965;
+  border-right-color: #cfaa36;
+  border-radius: 50%;
+  animation: dejen-loading-spin 1.3s linear infinite;
+}
+
+.dejen-loading-wordmark {
+  width: 164px;
+  height: 48px;
+  margin-top: 12px;
+  object-fit: contain;
+}
+
+.dejen-loading-label {
+  margin-top: 18px;
+  color: #34423f;
+  font-family: "Avenir Next", "Segoe UI", sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.dejen-loading-track {
+  width: 176px;
+  height: 3px;
+  margin-top: 14px;
+  overflow: hidden;
+  border-radius: 2px;
+  background: rgba(39, 121, 101, 0.16);
+}
+
+.dejen-loading-track span {
+  display: block;
+  width: 42%;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #277965, #cfaa36);
+  animation: dejen-loading-progress 1.5s ease-in-out infinite;
+}
+
+@keyframes dejen-loading-enter {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes dejen-loading-pulse {
+  50% { opacity: 0.72; transform: scale(0.94); }
+}
+
+@keyframes dejen-loading-spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes dejen-loading-progress {
+  from { transform: translateX(-110%); }
+  to { transform: translateX(250%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dejen-loading-content,
+  .dejen-loading-mark,
+  .dejen-loading-ring,
+  .dejen-loading-track span {
+    animation-duration: 0.01ms;
+    animation-iteration-count: 1;
+  }
+}
+
 /* Bubbledot headline typography */
 .font-bubbledot {
   font-family: 'BubbledotICG-FinePos', 'Geist Pixel Circle', 'JetBrains Mono', ui-monospace, monospace;

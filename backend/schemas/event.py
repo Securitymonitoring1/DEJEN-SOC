@@ -52,3 +52,11 @@ class EventResponse(BaseModel):
     severity: str
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class EventDeleteRequest(BaseModel):
+    password: str = Field(min_length=1, max_length=256)
+
+
+class EventDeleteResponse(BaseModel):
+    deleted_events: int

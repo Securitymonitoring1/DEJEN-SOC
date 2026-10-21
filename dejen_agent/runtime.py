@@ -23,8 +23,6 @@ def config_path() -> Path:
     if os.name == "nt":
         base = Path(os.getenv("LOCALAPPDATA", Path.home() / "AppData/Local"))
         return base / "Dejen" / "agent.json"
-    if platform.system() == "Darwin":
-        return Path.home() / "Library" / "Application Support" / "Dejen" / "agent.json"
     return Path.home() / ".config" / "dejen-agent" / "agent.json"
 
 
@@ -125,7 +123,6 @@ class AgentRuntime:
         self.events_sent = 0
         self.last_event_sent = "-"
         self._seen_windows_events: set[str] = set()
-        self._seen_macos_events: set[str] = set()
 
     def log(self, message: str, state: str | None = None) -> None:
         self.messages.put({"message": message, "state": state})
@@ -215,8 +212,6 @@ class AgentRuntime:
             try:
                 if platform.system() == "Windows":
                     events = self._collect_windows()
-                elif platform.system() == "Darwin":
-                    events = self._collect_macos()
                 elif platform.system() == "Linux":
                     events = self._collect_linux(linux_reader)
                 else:
@@ -362,20 +357,3 @@ class AgentRuntime:
             if event:
                 events.append(event)
         return events
-
-    def _collect_macos(self) -> list[dict]:
-        from dejen_agent.macos import collect_macos_auth_events
-
-        events = collect_macos_auth_events(
-            agent_id=str(self.config["agent_id"]),
-            host=socket.gethostname(),
-            lookback_seconds=EVENT_LOOKBACK_SECONDS,
-        )
-        results = []
-        for event in events:
-            event_key = f"{event.get('timestamp')}:{event.get('message')}"
-            if event_key in self._seen_macos_events:
-                continue
-            self._seen_macos_events.add(event_key)
-            results.append(event)
-        return results

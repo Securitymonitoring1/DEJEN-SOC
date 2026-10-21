@@ -167,7 +167,7 @@ class AgentManager:
                 f"{values['api_url']}/agents/enroll",
                 {
                     "token": token,
-                    "os": {"Windows": "windows", "Darwin": "macos"}.get(platform.system(), "linux"),
+                    "os": {"Windows": "windows"}.get(platform.system(), "linux"),
                     "version": __version__,
                     "host": socket.gethostname(),
                     "ip_address": local_ip_for_server(values["api_url"]),

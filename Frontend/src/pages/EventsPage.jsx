@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Activity, RefreshCw, Search, X } from "lucide-react";
+import { Activity, RefreshCw, Search, Trash2, X } from "lucide-react";
 import { GlassWorkspace } from "../components/layout/GlassWorkspace";
 import { useSoc } from "../context/SocContext";
 
 const stamp = (value) => value ? new Date(value).toLocaleString() : "-";
+const displaySourceIp = (value) => value === "::1" ? "127.0.0.1" : value;
 const eventLabel = (value) => value?.replaceAll("_", " ") || "Unknown event";
 const eventSummary = (event) => {
   const type = event.event_type?.toLowerCase().replaceAll(" ", "_");
@@ -27,11 +28,15 @@ const severityClass = (severity) => ({
 }[severity?.toUpperCase()] || "bg-neutral-100 text-neutral-700");
 
 export const EventsPage = () => {
-  const { events, loading, error, refreshData, routeParams } = useSoc();
+  const { events, agents, loading, error, refreshData, routeParams, currentUser, deleteEvent } = useSoc();
   const [query, setQuery] = useState(routeParams.query || "");
   const [severity, setSeverity] = useState("ALL");
   const [eventType, setEventType] = useState("ALL");
   const [selectedEvent, setSelectedEvent] = useState(null);
+  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [deletePassword, setDeletePassword] = useState("");
+  const [deleteState, setDeleteState] = useState({ busy: false, error: "" });
+  const [deleteMessage, setDeleteMessage] = useState("");
   const [panelWidth, setPanelWidth] = useState(340);
   const resizeState = useRef(null);
 
@@ -66,16 +71,35 @@ export const EventsPage = () => {
     setPanelWidth((current) => Math.max(280, Math.min(720, window.innerWidth - 360, current + widthChange)));
   };
 
+  const confirmDeleteEvent = async (submitEvent) => {
+    submitEvent.preventDefault();
+    if (!deleteTarget) return;
+    setDeleteState({ busy: true, error: "" });
+    try {
+      await deleteEvent(deleteTarget.event_id, deletePassword);
+      setSelectedEvent((current) => current?.event_id === deleteTarget.event_id ? null : current);
+      setDeleteMessage(`Deleted event from ${deleteTarget.host || "endpoint"} and its linked records.`);
+      setDeleteTarget(null);
+      setDeletePassword("");
+    } catch (deleteError) {
+      setDeleteState({ busy: false, error: deleteError instanceof Error ? deleteError.message : "Could not delete this event." });
+      return;
+    }
+    setDeleteState({ busy: false, error: "" });
+  };
+
   const eventTypes = useMemo(() => [...new Set(events.map((event) => event.event_type).filter(Boolean))].sort(), [events]);
+  const agentsById = useMemo(() => Object.fromEntries(agents.map((agent) => [agent.id, agent])), [agents]);
   const filteredEvents = useMemo(() => [...events]
     .sort((left, right) => new Date(right.timestamp).getTime() - new Date(left.timestamp).getTime())
     .filter((event) => {
-      const searchable = [event.event_id, event.event_type, event.host, event.agent_id, event.username, event.source_ip, event.message]
+      const deviceIp = agentsById[event.agent_id]?.ip_address;
+      const searchable = [event.event_id, event.event_type, event.host, event.agent_id, event.username, event.source_ip, deviceIp, event.message]
         .filter(Boolean).join(" ").toLowerCase();
       return (!query || searchable.includes(query.toLowerCase()))
         && (severity === "ALL" || event.severity?.toUpperCase() === severity)
         && (eventType === "ALL" || event.event_type === eventType);
-    }), [events, eventType, query, severity]);
+    }), [agentsById, events, eventType, query, severity]);
 
   return <GlassWorkspace>
     <div className="space-y-5">
@@ -91,6 +115,7 @@ export const EventsPage = () => {
       </header>
 
       {error && <p role="alert" className="rounded border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-800">{error}</p>}
+      {deleteMessage && <p role="status" className="rounded border border-emerald-300 bg-emerald-50 px-3 py-2 text-sm text-emerald-800">{deleteMessage}<button type="button" onClick={() => setDeleteMessage("")} className="ml-3 underline">Dismiss</button></p>}
 
       <div className="flex flex-wrap items-center gap-3 border-b border-black/10 pb-4">
         <label className="relative min-w-56 flex-1">
@@ -110,9 +135,9 @@ export const EventsPage = () => {
       <div className={selectedEvent ? "grid gap-5 xl:grid-cols-[minmax(0,1fr)_var(--event-panel-width)]" : ""} style={{ "--event-panel-width": `${panelWidth}px` }}>
         <section aria-label="Events" className="overflow-hidden rounded border border-black/10 bg-white">
           <div className="max-h-[calc(100vh-280px)] min-h-[280px] overflow-auto">
-            <table className="w-full min-w-[820px] text-left text-sm">
+            <table className={`w-full ${currentUser?.role === "ADMIN" ? "min-w-[1080px]" : "min-w-[980px]"} text-left text-sm`}>
               <thead className="sticky top-0 z-10 border-b border-black/10 bg-neutral-50 text-[11px] uppercase tracking-wide text-neutral-500">
-                <tr><th className="px-4 py-3">Time</th><th className="px-4 py-3">Severity</th><th className="px-4 py-3">Event</th><th className="px-4 py-3">Endpoint</th><th className="px-4 py-3">User / source</th><th className="px-4 py-3">Message</th></tr>
+                <tr><th className="px-4 py-3">Time</th><th className="px-4 py-3">Severity</th><th className="px-4 py-3">Event</th><th className="px-4 py-3">Endpoint</th><th className="px-4 py-3">Device IP</th><th className="px-4 py-3">User</th><th className="px-4 py-3">Source IP</th><th className="px-4 py-3">Message</th>{currentUser?.role === "ADMIN" && <th className="px-4 py-3">Actions</th>}</tr>
               </thead>
               <tbody className="divide-y divide-black/5">
                 {filteredEvents.map((event) => <tr key={event.event_id} onClick={() => setSelectedEvent(event)} className={`cursor-pointer align-top hover:bg-teal-50/50 ${selectedEvent?.event_id === event.event_id ? "bg-teal-50" : ""}`}>
@@ -120,10 +145,13 @@ export const EventsPage = () => {
                   <td className="px-4 py-3"><span className={`inline-flex rounded px-2 py-1 text-[10px] font-bold ${severityClass(event.severity)}`}>{event.severity || "UNKNOWN"}</span></td>
                   <td className="px-4 py-3 font-semibold text-neutral-900">{event.event_type?.replaceAll("_", " ") || "Unknown event"}</td>
                   <td className="px-4 py-3 text-neutral-700">{event.host || "-"}<small className="block text-xs text-neutral-400">Agent {event.agent_id || "-"}</small></td>
-                  <td className="px-4 py-3 text-neutral-700">{event.username || "-"}<small className="block text-xs text-neutral-400">{event.source_ip || "No source IP"}</small></td>
+                  <td className="px-4 py-3 font-mono text-xs text-neutral-700">{agentsById[event.agent_id]?.ip_address || "Not recorded"}</td>
+                  <td className="px-4 py-3 text-neutral-700">{event.username || "-"}</td>
+                  <td className="px-4 py-3 font-mono text-xs text-neutral-700">{displaySourceIp(event.source_ip) || "Not recorded"}</td>
                   <td className="max-w-xs px-4 py-3 text-xs text-neutral-600"><span className="line-clamp-2">{event.message || "-"}</span></td>
+                  {currentUser?.role === "ADMIN" && <td className="px-4 py-3" onClick={(clickEvent) => clickEvent.stopPropagation()}><button type="button" onClick={() => { setDeleteTarget(event); setDeletePassword(""); setDeleteState({ busy: false, error: "" }); }} title="Delete event" aria-label={`Delete event from ${event.host || "endpoint"}`} className="inline-flex items-center gap-1 rounded border border-red-300 px-2 py-1 text-[10px] font-semibold text-red-800 hover:bg-red-50"><Trash2 size={12} />Delete</button></td>}
                 </tr>)}
-                {!filteredEvents.length && <tr><td colSpan="6" className="px-4 py-14 text-center">
+                {!filteredEvents.length && <tr><td colSpan={currentUser?.role === "ADMIN" ? 9 : 8} className="px-4 py-14 text-center">
                   <Activity size={20} className="mx-auto mb-2 text-neutral-400" />
                   <p className="font-medium text-neutral-700">{events.length ? "No events match these filters" : loading ? "Loading events…" : "No endpoint events received yet"}</p>
                   <p className="mt-1 text-xs text-neutral-500">{events.length ? "Try another search or filter." : "Events will appear here after an agent sends telemetry."}</p>
@@ -144,7 +172,7 @@ export const EventsPage = () => {
               <p className="event-summary-text mt-1 text-sm leading-5 text-neutral-800">{eventSummary(selectedEvent)}</p>
             </div>
             <dl className="grid grid-cols-2 gap-x-3 gap-y-4">
-              {[["Time", stamp(selectedEvent.timestamp)], ["Severity", selectedEvent.severity], ["Endpoint", selectedEvent.host], ["User", selectedEvent.username || "Not recorded"], ["Source IP", selectedEvent.source_ip || "Not recorded"], ["Agent", selectedEvent.agent_id || "Not recorded"]].map(([label, value]) => <div key={label} className="min-w-0"><dt className="text-[10px] font-semibold uppercase tracking-wide text-neutral-500">{label}</dt><dd className="mt-1 break-all text-sm text-neutral-800">{value || "-"}</dd></div>)}
+              {[["Time", stamp(selectedEvent.timestamp)], ["Severity", selectedEvent.severity], ["Endpoint", selectedEvent.host], ["Device IP", agentsById[selectedEvent.agent_id]?.ip_address || "Not recorded"], ["User", selectedEvent.username || "Not recorded"], ["Source IP", displaySourceIp(selectedEvent.source_ip) || "Not recorded"], ["Agent", selectedEvent.agent_id || "Not recorded"]].map(([label, value]) => <div key={label} className="min-w-0"><dt className="text-[10px] font-semibold uppercase tracking-wide text-neutral-500">{label}</dt><dd className="mt-1 break-all text-sm text-neutral-800">{value || "-"}</dd></div>)}
             </dl>
             <details className="border-t border-black/10 pt-3">
               <summary className="cursor-pointer text-xs font-semibold text-neutral-700">Technical details</summary>
@@ -158,5 +186,23 @@ export const EventsPage = () => {
         </aside>}
       </div>
     </div>
+    {deleteTarget && <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/45 p-4" onClick={() => !deleteState.busy && setDeleteTarget(null)}>
+      <section role="dialog" aria-modal="true" aria-labelledby="delete-event-title" className="w-full max-w-md rounded-md border border-red-200 bg-white p-5 shadow-2xl" onClick={(event) => event.stopPropagation()}>
+        <div className="flex items-start justify-between gap-3">
+          <div><h2 id="delete-event-title" className="text-base font-bold text-neutral-900">Delete event?</h2><p className="mt-1 text-xs text-neutral-600">This permanently removes the event and its linked alerts, incidents, notes, and response actions.</p></div>
+          <button type="button" onClick={() => setDeleteTarget(null)} disabled={deleteState.busy} className="rounded p-1 text-neutral-500 hover:bg-neutral-100 disabled:opacity-50" aria-label="Close delete event dialog"><X size={17} /></button>
+        </div>
+        <p className="mt-3 break-all rounded bg-neutral-50 px-3 py-2 font-mono text-xs text-neutral-700">{deleteTarget.host} · {deleteTarget.event_id}</p>
+        <form onSubmit={confirmDeleteEvent}>
+          <label htmlFor="delete-event-admin-password" className="mt-4 block text-xs font-semibold text-neutral-700">Administrator password</label>
+          <input id="delete-event-admin-password" type="password" autoComplete="current-password" value={deletePassword} onChange={(event) => setDeletePassword(event.target.value)} required className="mt-1 w-full rounded border border-black/20 px-3 py-2 text-sm" />
+          {deleteState.error && <p role="alert" className="mt-2 text-xs text-red-700">{deleteState.error}</p>}
+          <div className="mt-4 flex justify-end gap-2">
+            <button type="button" onClick={() => setDeleteTarget(null)} disabled={deleteState.busy} className="rounded border border-black/20 px-3 py-2 text-xs font-semibold text-neutral-700">Cancel</button>
+            <button type="submit" disabled={deleteState.busy || !deletePassword} className="rounded bg-red-700 px-3 py-2 text-xs font-semibold text-white hover:bg-red-800 disabled:cursor-not-allowed disabled:opacity-50">{deleteState.busy ? "Deleting…" : "Confirm delete"}</button>
+          </div>
+        </form>
+      </section>
+    </div>}
   </GlassWorkspace>;
 };
