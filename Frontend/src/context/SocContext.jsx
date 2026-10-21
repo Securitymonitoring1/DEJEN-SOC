@@ -120,6 +120,7 @@ function normalizeIncident(incident, alerts) {
     assignedAnalyst: incident.assigned_to || "Unassigned",
     assignedTo: incident.assigned_to,
     createdAt: incident.created_at,
+    reportingStartedAt: incident.created_at,
     updatedAt: incident.updated_at,
     affectedAssets: alert && alert.host !== "Unknown host" ? [alert.host] : [],
     alertIds: [incident.alert_id],

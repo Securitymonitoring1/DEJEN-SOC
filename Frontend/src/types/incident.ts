@@ -10,6 +10,7 @@ export interface Incident {
   assignedAnalyst: string;
   status: IncidentStatus;
   createdAt: string;
+  reportingStartedAt: string;
   updatedAt?: string;
   summary: string;
   affectedAssets: string[];

@@ -6,8 +6,8 @@ import { EventTimeline } from "../components/EventTimeline";
 import { IncidentCard } from "../components/IncidentCard";
 import { IncidentReportingCountdown } from "../components/widgets/IncidentReportingCountdown";
 import { useSoc } from "../context/SocContext";
+import { getIncidentReportingDeadline } from "../utils/incidentReporting";
 
-const REPORTING_WINDOW_MS = 48 * 60 * 60 * 1000;
 const URGENT_WINDOW_MS = 12 * 60 * 60 * 1000;
 
 const metrics = [
@@ -29,10 +29,10 @@ export const DashboardPage = () => {
   const urgentIncidents = incidents
     .filter((incident) => {
       if (["RESOLVED", "CLOSED"].includes(incident.status)) return false;
-      const deadline = new Date(incident.createdAt).getTime() + REPORTING_WINDOW_MS;
-      return Number.isFinite(deadline) && deadline - clockNow <= URGENT_WINDOW_MS;
+      const deadline = getIncidentReportingDeadline(incident.reportingStartedAt);
+      return deadline !== null && deadline.getTime() - clockNow <= URGENT_WINDOW_MS;
     })
-    .sort((first, second) => new Date(first.createdAt).getTime() - new Date(second.createdAt).getTime());
+    .sort((first, second) => getIncidentReportingDeadline(first.reportingStartedAt).getTime() - getIncidentReportingDeadline(second.reportingStartedAt).getTime());
   return <GlassWorkspace>
     <div className="soc-dashboard">
       <div className="soc-view-head">
@@ -60,7 +60,7 @@ export const DashboardPage = () => {
             <div className="mt-3 divide-y divide-red-200">
               {urgentIncidents.map((incident) => <button key={incident.id} onClick={() => navigate(`/incidents/${incident.id}`)} className="flex w-full flex-wrap items-center justify-between gap-x-4 gap-y-1 py-2 text-left hover:bg-red-100/70">
                 <span className="min-w-0 flex-1 truncate text-xs font-semibold text-red-950">{incident.title}<span className="ml-2 font-normal text-red-800">{incident.severity} · {incident.status}</span></span>
-                <span className="whitespace-nowrap text-xs"><IncidentReportingCountdown createdAt={incident.createdAt} compact /></span>
+                <span className="whitespace-nowrap text-xs"><IncidentReportingCountdown startedAt={incident.reportingStartedAt} compact /></span>
               </button>)}
             </div>
           </div>

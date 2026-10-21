@@ -4,6 +4,7 @@ import { GlassWorkspace } from "../components/layout/GlassWorkspace";
 import { PdfDocumentPreview } from "../components/PdfDocumentPreview";
 import { useSoc } from "../context/SocContext";
 import { createReportCsv, createReportPdf, triggerBrowserDownload } from "../utils/fileDownloader";
+import { getIncidentReportingDeadline } from "../utils/incidentReporting";
 
 const formatDate = (value) => new Date(value).toLocaleString();
 const reportDay = (value) => {
@@ -142,6 +143,7 @@ export const ReportsPage = () => {
           `${incident.severity} | ${incident.title}`,
           `Status: ${incident.status}  Assigned to: ${incident.assignedAnalyst}`,
           `Created: ${createdAt}`,
+          `48h Reporting Deadline: ${getIncidentReportingDeadline(incident.reportingStartedAt)?.toLocaleString() || "Unavailable"}`,
           `Related alert: ${incident.alertId}`,
           `Details: ${incident.description}`,
         ].join("\n");

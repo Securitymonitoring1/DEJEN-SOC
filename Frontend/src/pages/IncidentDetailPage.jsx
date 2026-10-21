@@ -5,6 +5,7 @@ import { IncidentReportingCountdown } from "../components/widgets/IncidentReport
 import { useSoc } from "../context/SocContext";
 import { incidentsApi } from "../services/api";
 import { downloadReportPdf } from "../utils/fileDownloader";
+import { getIncidentReportingDeadline } from "../utils/incidentReporting";
 
 const formatTimestamp = (value) => {
   if (!value) return "—";
@@ -97,6 +98,7 @@ export const IncidentDetailPage = () => {
         `Assigned to: ${incident.assignedAnalyst}`,
         `Related alert: ${incident.alertId}`,
         `Created: ${incident.createdAt}`,
+        `48h Reporting Deadline: ${getIncidentReportingDeadline(incident.reportingStartedAt)?.toLocaleString() || "Unavailable"}`,
         `Last updated: ${incident.updatedAt || "Not recorded"}`,
         incident.description || incident.summary,
         ...actions.map((action) => `${action.created_at} | ${action.action_type} | ${action.username}: ${action.description}`),
@@ -123,7 +125,7 @@ export const IncidentDetailPage = () => {
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
         <div className="rounded-md border border-black/10 bg-white p-3">
           <div className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[#62686d]">48h Reporting Deadline</div>
-          <div className="mt-2 text-lg"><IncidentReportingCountdown createdAt={incident.createdAt} /></div>
+          <div className="mt-2 text-lg"><IncidentReportingCountdown startedAt={incident.reportingStartedAt} /></div>
         </div>
         <div className="rounded-md border border-black/10 bg-white p-3">
           <div className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[#62686d]">Created</div>

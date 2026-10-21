@@ -11,10 +11,67 @@ from backend.models.incident import Incident
 SAMPLE_PREFIX = "DEJEN-SAMPLE"
 
 
+def seed_incident_sample(db, now: datetime) -> None:
+    event = db.scalar(
+        select(Event).where(Event.agent_id == f"{SAMPLE_PREFIX}-AGENT-07")
+    )
+    if event is None:
+        event = Event(
+            timestamp=now - timedelta(hours=42),
+            agent_id=f"{SAMPLE_PREFIX}-AGENT-07",
+            host="LINUX-FIN-03",
+            event_type="authentication_failure",
+            username="finance.admin",
+            source_ip="198.51.100.77",
+            message="Repeated failed authentication attempts against a finance administrator account.",
+            severity="HIGH",
+        )
+        db.add(event)
+        db.flush()
+
+    alert = db.scalar(
+        select(Alert).where(Alert.event_id == event.event_id)
+    )
+    if alert is None:
+        alert = Alert(
+            event_id=event.event_id,
+            rule_name="Finance Account Brute Force",
+            title="Repeated login failures on LINUX-FIN-03",
+            description="Repeated authentication failures targeted the finance administrator account.",
+            severity="HIGH",
+            risk_score=84,
+            status="OPEN",
+        )
+        db.add(alert)
+        db.flush()
+
+    incident = db.scalar(
+        select(Incident).where(Incident.alert_id == alert.alert_id)
+    )
+    if incident is None:
+        db.add(
+            Incident(
+                alert_id=alert.alert_id,
+                title="Brute-force attempt against finance administrator",
+                description="Review authentication activity, confirm whether the account was accessed, and block the source if the attempts are unauthorized.",
+                severity="HIGH",
+                status="OPEN",
+                assigned_to=None,
+            )
+        )
+        db.commit()
+        print("Added a sample incident with its related event and alert.")
+    else:
+        print("Sample incident already exists.")
+
+
 def seed_samples() -> None:
     db = SessionLocal()
 
     try:
+        now = datetime.utcnow()
+        seed_incident_sample(db, now)
+
         existing = db.scalar(
             select(Event).where(Event.agent_id == f"{SAMPLE_PREFIX}-AGENT-01")
         )
@@ -22,7 +79,6 @@ def seed_samples() -> None:
             print("Sample security records already exist.")
             return
 
-        now = datetime.utcnow()
         events = [
             Event(
                 timestamp=now - timedelta(minutes=8),

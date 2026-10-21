@@ -1,28 +1,26 @@
 import { useEffect, useState } from "react";
-
-const REPORTING_WINDOW_MS = 48 * 60 * 60 * 1000;
+import { getIncidentReportingDeadline } from "../../utils/incidentReporting";
 
 const formatRemaining = (milliseconds) => {
-  const totalSeconds = Math.floor(Math.max(0, milliseconds) / 1000);
+  const totalSeconds = Math.ceil(Math.max(0, milliseconds) / 1000);
   const hours = Math.floor(totalSeconds / 3600);
   const minutes = Math.floor((totalSeconds % 3600) / 60);
   const seconds = totalSeconds % 60;
   return `${String(hours).padStart(2, "0")}h ${String(minutes).padStart(2, "0")}m ${String(seconds).padStart(2, "0")}s`;
 };
 
-export const IncidentReportingCountdown = ({ createdAt, compact = false }) => {
+export const IncidentReportingCountdown = ({ startedAt, compact = false }) => {
   const [now, setNow] = useState(Date.now());
-  const createdAtMs = new Date(createdAt).getTime();
+  const deadline = getIncidentReportingDeadline(startedAt);
 
   useEffect(() => {
     const intervalId = window.setInterval(() => setNow(Date.now()), 1000);
     return () => window.clearInterval(intervalId);
   }, []);
 
-  if (!Number.isFinite(createdAtMs)) return <span>Unavailable</span>;
+  if (!deadline) return <span>Unavailable</span>;
 
-  const elapsedMs = Math.max(0, now - createdAtMs);
-  const remainingMs = Math.max(0, REPORTING_WINDOW_MS - elapsedMs);
+  const remainingMs = Math.max(0, deadline.getTime() - now);
   const status = remainingMs <= 0 ? "Overdue" : remainingMs <= 12 * 60 * 60 * 1000 ? "Urgent" : remainingMs <= 24 * 60 * 60 * 1000 ? "Due soon" : "On track";
   const statusClass = remainingMs <= 0 ? "text-red-700" : remainingMs <= 12 * 60 * 60 * 1000 ? "text-orange-700" : remainingMs <= 24 * 60 * 60 * 1000 ? "text-amber-700" : "text-[#287b70]";
 
