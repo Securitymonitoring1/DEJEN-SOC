@@ -19,7 +19,11 @@ app = FastAPI(
 # Allow the deployed DEJEN SOC frontend to access the backend.
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://dejen-frontend-2s3x.onrender.com"],
+    allow_origins=[
+        "https://dejen-frontend-2s3x.onrender.com",
+        "https://dejen.com.et",
+        "https://www.dejen.com.et",
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
