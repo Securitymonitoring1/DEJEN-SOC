@@ -8,14 +8,100 @@ DEJEN-SOC (Security Monitoring and Incident Response Platform) is a web based cy
 This provides a centralised platform for monitoring, investigating suspicious events and responding to incidents.
 ## 🎯 Purpose
 To create a centralised solution for monitoring and incident response. To make managing security events easier, increase visibility of incidents and enable quick investigations and responses to possible cyber threats.
+## 🎥 Video Presentation
+
+**Project:** DEJEN-SOC — Security Monitoring and Incident Response Platform
+
+**Duration:** 5 minutes
+
+[▶ Watch the Project Demonstration](PASTE_YOUR_GOOGLE_DRIVE_LINK_HERE)
+
+Key Features
+
+Monitor Security Events
+
+Detect and monitor security events.
+
+Investigate Incidents
+
+Detect, monitor and investigate potential security incidents.
+
+View Alerts
+
+View alerts for suspicious activity.
+
+View Security Information
+
+View security information through a dashboard.
+
+Endpoint Agent Management
+
+Manage agent signups for endpoints.
+
+Investigation Notes
+
+Record investigation notes.
+
+Incident Response
+
+Support incident response processes and actions at endpoints.
+
+Authentication
+
+Secure access to authorised parts of the platform.
+
+Ethiopian Inspired
+
+Create an Ethiopian inspired brand.
+
+Tech Stack
+
+Component
+
+Technology Used
+
+Front End
+
+React, Typescript, Vite
+
+Back End
+
+Python, FastAPI
+
+Database
+
+PostgreSQL
+
+Database
+
+SQL Alchemy
+
+API
+
+REST API
+
+Hosting
+
+Render
+
+Source Control
+
+Git, GitHub
+
+Architecture
+
+The system has 3 main components:
+
+Front End: The interface for viewing the dashboard, security events, alerts, incidents and endpoint agents.
+
+Back End API: Manages the applications logic, authentication, security data and connects the front end with the database.
+
+Database: The PostgreSQL database stores data in the application relating to users, events, alerts, incidents, agents and investigation notes.
 
 
 
 
-
-# Dejen
-
-Dejen is a security operations frontend backed by the FastAPI service in `backend/`. The frontend uses backend authentication and reads/writes implemented routes for dashboard summaries, events, alerts, incidents (including assignment, notes, and activity), and agent enrollment/fleet management.
+#Installation Process
 
 ## Run locally
 
