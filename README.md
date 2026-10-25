@@ -9,7 +9,7 @@ Include the full names and CTC IDs of all team members.
 |---|---|---|
 | 1 | `Nathan Tesfaye` | `CTC-1808-26` |
 | 2 | `Abel Assefa` | `CTC-2446-26` |
-| 3 | `Kabtamu Getaw` | `CTC-0808-26` |
+| 3 | `Kabtamu Getaw` | `CTC-808-26` |
 | 4 | `Fedesa Girma` | `CTC-1807-26` |
 | 5 | `Tewodros Gebeyaw` | `CTC1812-26` |
 | 6 | `Yonatan Birhanu` | `CTC-4018-26` |
