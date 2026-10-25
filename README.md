@@ -1,5 +1,25 @@
 # 🇪🇹 DEJEN-SOC
-# Security Monitoring and Incident Response Platform
+# Security Monitoring and Incident Response Platform 
+## 👥 Team Information
+
+Include the full names and CTC IDs of all team members.
+
+| No. | Full Name | CTC ID |
+|---|---|---|
+| 1 | `[Nathan Tesfaye]` | `[CTC-1808-26]` |
+| 2 | `[Abel Assefa]` | `[CTC-2446-26]` |
+| 3 | `[Kabtamu Getaw]` | `[CTC-0808-26]` |
+| 4 | `[Fedesa Girma]` | `[CTC-1807-26]` |
+| 5 | `[Tewodros Gebeyaw]` | `[CTC1812-26]` |
+| 6 | `[Yonatan Birhanu]` | `[CTC-4018-26]` |
+
+## 🎥 Video Presentation
+
+**Project:** DEJEN-SOC — Security Monitoring and Incident Response Platform
+
+**Duration:** 5 minutes
+
+[▶ Watch the Project Demonstration](https://drive.google.com/file/d/1IXUUhOPtkY07bx84WxmkzjOkd3lgv6vr/view?usp=sharing)
 
 ## 📌 Project Overview
 
@@ -8,95 +28,59 @@ DEJEN-SOC (Security Monitoring and Incident Response Platform) is a web based cy
 This provides a centralised platform for monitoring, investigating suspicious events and responding to incidents.
 ## 🎯 Purpose
 To create a centralised solution for monitoring and incident response. To make managing security events easier, increase visibility of incidents and enable quick investigations and responses to possible cyber threats.
-## 🎥 Video Presentation
 
-**Project:** DEJEN-SOC — Security Monitoring and Incident Response Platform
+## Key Features
 
-**Duration:** 5 minutes
-
-[▶ Watch the Project Demonstration](PASTE_YOUR_GOOGLE_DRIVE_LINK_HERE)
-
-Key Features
-
-Monitor Security Events
-
+### Monitor Security Events
 Detect and monitor security events.
 
-Investigate Incidents
-
+### Investigate Incidents
 Detect, monitor and investigate potential security incidents.
 
-View Alerts
-
+### View Alerts
 View alerts for suspicious activity.
 
-View Security Information
-
+### View Security Information
 View security information through a dashboard.
 
-Endpoint Agent Management
-
+### Endpoint Agent Management
 Manage agent signups for endpoints.
 
-Investigation Notes
-
+### Investigation Notes
 Record investigation notes.
 
-Incident Response
-
+### Incident Response
 Support incident response processes and actions at endpoints.
 
-Authentication
-
+### Authentication
 Secure access to authorised parts of the platform.
 
-Ethiopian Inspired
-
+### Ethiopian Inspired
 Create an Ethiopian inspired brand.
 
-Tech Stack
+## Tech Stack
 
-Component
+| Component | Technology Used |
+|---|---|
+| Front End | React, Typescript, Vite |
+| Back End | Python, FastAPI |
+| Database | PostgreSQL |
+| Database | SQL Alchemy |
+| API | REST API |
+| Source Control | Git, GitHub |
 
-Technology Used
-
-Front End
-
-React, Typescript, Vite
-
-Back End
-
-Python, FastAPI
-
-Database
-
-PostgreSQL
-
-Database
-
-SQL Alchemy
-
-API
-
-REST API
-
-Hosting
-
-Render
-
-Source Control
-
-Git, GitHub
-
-Architecture
+## Architecture
 
 The system has 3 main components:
 
-Front End: The interface for viewing the dashboard, security events, alerts, incidents and endpoint agents.
+### Front End
+The interface for viewing the dashboard, security events, alerts, incidents and endpoint agents.
 
-Back End API: Manages the applications logic, authentication, security data and connects the front end with the database.
+### Back End API
+Manages the applications logic, authentication, security data and connects the front end with the database.
 
-Database: The PostgreSQL database stores data in the application relating to users, events, alerts, incidents, agents and investigation notes.
+### Database
+The PostgreSQL database stores data in the application relating to users, events, alerts, incidents, agents and investigation notes.
 
 
 
