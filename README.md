@@ -5,14 +5,14 @@
 
 Include the full names and CTC IDs of all team members.
 
-| No. | Full Name | CTC ID |
-|---|---|---|
-| 1 | `Nathan Tesfaye` | `CTC-1808-26` |
-| 2 | `Abel Assefa` | `CTC-2446-26` |
-| 3 | `Kabtamu Getaw` | `CTC-808-26` |
-| 4 | `Fedesa Girma` | `CTC-1807-26` |
-| 5 | `Tewodros Gebeyaw` | `CTC1812-26` |
-| 6 | `Yonatan Birhanu` | `CTC-4018-26` |
+| No. | Full Name | CTC ID |Contribution video|
+|---|---|---|---|
+| 1 | `Nathan Tesfaye` | `CTC-1808-26` |[▶ Watch the video](https://drive.google.com/file/d/1IXUUhOPtkY07bx84WxmkzjOkd3lgv6vr/view?usp=sharing)|
+| 2 | `Abel Assefa` | `CTC-2446-26` |[▶ Watch the video](https://drive.google.com/file/u/0/d/15QvprZSVuIXfHf6hG3tN4Y6pL44u6c0E/view?usp=drivesdk&pli=1)|
+| 3 | `Kabtamu Getaw` | `CTC-808-26` |[▶ Watch the video]()|
+| 4 | `Fedesa Girma` | `CTC-1807-26` |[▶ Watch the video]()|
+| 5 | `Tewodros Gebeyaw` | `CTC1812-26` |[▶ Watch the video]()|
+| 6 | `Yonatan Birhanu` | `CTC-4018-26` |[▶ Watch the video]()|
 
 ## 🎥 Video Presentation
 
